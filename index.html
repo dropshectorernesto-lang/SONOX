@@ -125,8 +125,8 @@
   <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
 
   <script>
-    const PUBLIC_KEY = "c6c682a7-d151-470a-bee5-6818d2f13176";
-    const ASSISTANT_ID = "4a5f727e-2a06-4969-aa5d-ddf31d0a3940";
+    const PUBLIC_KEY = "4a5f727e-2a06-4969-aa5d-ddf31d0a3940";
+    const ASSISTANT_ID = "c50dd38e-dcb2-4ca3-b69c50dd38e-dcb2-4ca3-b696-f489d99b0cca6-f489d99b0cca";
 
     let vapiInstance = null;
     let activeCall = false;
@@ -149,7 +149,7 @@
           console.error("Vapi Error:", e);
           activeCall = false;
           setButtonState('disconnected');
-          document.getElementById('status-msg').innerText = "Call failed. Please allow microphone permissions in your browser.";
+          document.getElementById('status-msg').innerText = "Call failed to initialize. Check browser console for details.";
         });
       } else {
         document.getElementById('status-msg').innerText = "Voice SDK failed to load. Check browser extensions.";
