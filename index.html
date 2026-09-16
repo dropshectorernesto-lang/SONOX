@@ -89,7 +89,8 @@
     #status-msg { margin-top: 16px; font-size: 13px; color: #f59e0b; min-height: 20px; }
   </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js"></script>
+  <!-- Alternative UNPKG Mirror for Vapi SDK -->
+  <script src="https://unpkg.com/@vapi-ai/web@latest/dist/vapi.js"></script>
 </head>
 <body>
 
@@ -131,38 +132,48 @@
     let vapiInstance = null;
     let activeCall = false;
 
-    window.addEventListener('load', () => {
+    function initVapi() {
       if (window.Vapi) {
-        vapiInstance = new window.Vapi(PUBLIC_KEY);
+        try {
+          vapiInstance = new window.Vapi(PUBLIC_KEY);
 
-        vapiInstance.on('call-start', () => {
-          activeCall = true;
-          setButtonState('connected');
-        });
+          vapiInstance.on('call-start', () => {
+            activeCall = true;
+            setButtonState('connected');
+          });
 
-        vapiInstance.on('call-end', () => {
-          activeCall = false;
-          setButtonState('disconnected');
-        });
+          vapiInstance.on('call-end', () => {
+            activeCall = false;
+            setButtonState('disconnected');
+          });
 
-        vapiInstance.on('error', (e) => {
-          console.error("Vapi Error:", e);
-          activeCall = false;
-          setButtonState('disconnected');
-          document.getElementById('status-msg').innerText = "Call failed to initialize. Check browser console for details.";
-        });
+          vapiInstance.on('error', (e) => {
+            console.error("Vapi Error:", e);
+            activeCall = false;
+            setButtonState('disconnected');
+            document.getElementById('status-msg').innerText = "Call error. Verify microphone permissions.";
+          });
+
+          document.getElementById('status-msg').innerText = "";
+        } catch (err) {
+          console.error("Init failure:", err);
+        }
       } else {
-        document.getElementById('status-msg').innerText = "Voice SDK failed to load. Check browser extensions.";
+        document.getElementById('status-msg').innerText = "Voice engine blocked by network/extension. Disable ad-blockers.";
       }
-    });
+    }
+
+    window.addEventListener('load', initVapi);
 
     async function handleCallClick() {
       const msg = document.getElementById('status-msg');
-      msg.innerText = "";
 
       if (!vapiInstance) {
-        msg.innerText = "Initializing engine... try again in 2 seconds.";
-        return;
+        initVapi();
+        if (!vapiInstance) {
+          msg.innerText = "Script blocked. Please disable ad-blockers/Brave Shield.";
+          return;
+        }
       }
 
       if (!activeCall) {
