@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICES — AI Voice Agent Demonstration</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    nav {
+      border-bottom: 1px solid #1e293b;
+      background: rgba(2, 6, 23, 0.5);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 0.05em; }
+    .badge {
+      font-size: 11px;
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    main { max-width: 800px; margin: 0 auto; padding: 48px 24px; text-align: center; width: 100%; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 32px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #34d399; }
+    h1 { font-size: 42px; font-weight: 800; color: #ffffff; line-height: 1.2; margin-bottom: 24px; }
+    p.subtext { font-size: 18px; color: #94a3b8; max-width: 600px; margin: 0 auto 32px; line-height: 1.5; }
+
+    .call-container { margin-bottom: 40px; }
+    #call-btn {
+      background-color: #2563eb;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 20px;
+      padding: 20px 48px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+      transition: all 0.2s ease;
+    }
+    #call-btn:hover { background-color: #1d4ed8; transform: translateY(-2px); }
+    #call-btn.connecting { background-color: #d97706; cursor: wait; }
+    #call-btn.connected { background-color: #dc2626; box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5); }
+
+    .card {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      padding: 32px;
+      border-radius: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .card h3 { font-size: 12px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 16px; }
+    .card ul { list-style: none; }
+    .card li { font-size: 14px; color: #cbd5e1; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+    .bullet { color: #3b82f6; font-weight: bold; }
+    footer { border-top: 1px solid #1e293b; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+    #status-msg { margin-top: 16px; font-size: 13px; color: #f59e0b; min-height: 20px; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js"></script>
+</head>
+<body>
+
+  <nav>
+    <div class="brand">VOICES</div>
+    <div class="badge">Live AI Demonstration</div>
+  </nav>
+
+  <main>
+    <div class="status-pill">
+      <span id="status-dot" class="dot"></span>
+      <span id="status-text">AI Receptionist Ready to Speak</span>
+    </div>
+
+    <h1>Experience 24/7 Conversational AI</h1>
+    <p class="subtext">Test our real-time voice agent live. Click the button below to start a call using your microphone.</p>
+
+    <div class="call-container">
+      <button id="call-btn" onclick="handleCallClick()">Start Demo Call</button>
+      <div id="status-msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>Things you can test on the call:</h3>
+      <ul>
+        <li><span class="bullet">&gt;</span> "I have an urgent request and need immediate assistance."</li>
+        <li><span class="bullet">&gt;</span> "I'd like to check availability and schedule an appointment."</li>
+        <li><span class="bullet">&gt;</span> "What services do you offer and what are your standard fees?"</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+
+  <script>
+    const PUBLIC_KEY = "c6c682a7-d151-470a-bee5-6818d2f13176";
+    const ASSISTANT_ID = "4a5f727e-2a06-4969-aa5d-ddf31d0a3940";
+
+    let vapiInstance = null;
+    let activeCall = false;
+
+    window.addEventListener('load', () => {
+      if (window.Vapi) {
+        vapiInstance = new window.Vapi(PUBLIC_KEY);
+
+        vapiInstance.on('call-start', () => {
+          activeCall = true;
+          setButtonState('connected');
+        });
+
+        vapiInstance.on('call-end', () => {
+          activeCall = false;
+          setButtonState('disconnected');
+        });
+
+        vapiInstance.on('error', (e) => {
+          console.error("Vapi Error:", e);
+          activeCall = false;
+          setButtonState('disconnected');
+          document.getElementById('status-msg').innerText = "Call failed. Please allow microphone permissions in your browser.";
+        });
+      } else {
+        document.getElementById('status-msg').innerText = "Voice SDK failed to load. Check browser extensions.";
+      }
+    });
+
+    async function handleCallClick() {
+      const msg = document.getElementById('status-msg');
+      msg.innerText = "";
+
+      if (!vapiInstance) {
+        msg.innerText = "Initializing engine... try again in 2 seconds.";
+        return;
+      }
+
+      if (!activeCall) {
+        setButtonState('connecting');
+
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+          msg.innerText = "Microphone access denied by browser.";
+          setButtonState('disconnected');
+          return;
+        }
+
+        vapiInstance.start(ASSISTANT_ID);
+      } else {
+        vapiInstance.stop();
+      }
+    }
+
+    function setButtonState(state) {
+      const btn = document.getElementById('call-btn');
+      const statusText = document.getElementById('status-text');
+      const statusDot = document.getElementById('status-dot');
+
+      if (state === 'connecting') {
+        btn.innerText = "Connecting...";
+        btn.className = "connecting";
+      } else if (state === 'connected') {
+        btn.innerText = "End Call";
+        btn.className = "connected";
+        statusText.innerText = "Call Connected — Speak Now";
+        statusDot.style.backgroundColor = "#ef4444";
+      } else {
+        btn.innerText = "Start Demo Call";
+        btn.className = "";
+        statusText.innerText = "AI Receptionist Ready to Speak";
+        statusDot.style.backgroundColor = "#34d399";
+      }
+    }
+  </script>
+
+</body>
+</html>
