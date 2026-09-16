@@ -48,10 +48,9 @@
       color: #cbd5e1;
       margin-bottom: 32px;
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #34d399; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b; }
     h1 { font-size: 42px; font-weight: 800; color: #ffffff; line-height: 1.2; margin-bottom: 24px; }
     p.subtext { font-size: 18px; color: #94a3b8; max-width: 600px; margin: 0 auto 32px; line-height: 1.5; }
-
     .call-container { margin-bottom: 40px; }
     #call-btn {
       background-color: #2563eb;
@@ -68,10 +67,10 @@
       box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
       transition: all 0.2s ease;
     }
-    #call-btn:hover { background-color: #1d4ed8; transform: translateY(-2px); }
+    #call-btn:hover:not(:disabled) { background-color: #1d4ed8; transform: translateY(-2px); }
+    #call-btn:disabled { opacity: 0.55; cursor: wait; }
     #call-btn.connecting { background-color: #d97706; cursor: wait; }
     #call-btn.connected { background-color: #dc2626; box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5); }
-
     .card {
       background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
       border: 1px solid #334155;
@@ -87,13 +86,10 @@
     .bullet { color: #3b82f6; font-weight: bold; }
     footer { border-top: 1px solid #1e293b; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
     #status-msg { margin-top: 16px; font-size: 13px; color: #f59e0b; min-height: 20px; }
+    #vapi-support-btn { display: none !important; }
   </style>
-
-  <!-- Alternative UNPKG Mirror for Vapi SDK -->
-  <script src="https://unpkg.com/@vapi-ai/web@latest/dist/vapi.js"></script>
 </head>
 <body>
-
   <nav>
     <div class="brand">VOICES</div>
     <div class="badge">Live AI Demonstration</div>
@@ -102,14 +98,14 @@
   <main>
     <div class="status-pill">
       <span id="status-dot" class="dot"></span>
-      <span id="status-text">AI Receptionist Ready to Speak</span>
+      <span id="status-text">Loading voice engine…</span>
     </div>
 
     <h1>Experience 24/7 Conversational AI</h1>
     <p class="subtext">Test our real-time voice agent live. Click the button below to start a call using your microphone.</p>
 
     <div class="call-container">
-      <button id="call-btn" onclick="handleCallClick()">Start Demo Call</button>
+      <button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button>
       <div id="status-msg"></div>
     </div>
 
@@ -127,69 +123,107 @@
 
   <script>
     const PUBLIC_KEY = "4a5f727e-2a06-4969-aa5d-ddf31d0a3940";
-    const ASSISTANT_ID = "c50dd38e-dcb2-4ca3-b69c50dd38e-dcb2-4ca3-b696-f489d99b0cca6-f489d99b0cca";
+    const ASSISTANT_ID = "c50dd38e-dcb2-4ca3-b696-f489d99b0cca";
 
     let vapiInstance = null;
     let activeCall = false;
 
-    function initVapi() {
-      if (window.Vapi) {
-        try {
-          vapiInstance = new window.Vapi(PUBLIC_KEY);
-
-          vapiInstance.on('call-start', () => {
-            activeCall = true;
-            setButtonState('connected');
-          });
-
-          vapiInstance.on('call-end', () => {
-            activeCall = false;
-            setButtonState('disconnected');
-          });
-
-          vapiInstance.on('error', (e) => {
-            console.error("Vapi Error:", e);
-            activeCall = false;
-            setButtonState('disconnected');
-            document.getElementById('status-msg').innerText = "Call error. Verify microphone permissions.";
-          });
-
-          document.getElementById('status-msg').innerText = "";
-        } catch (err) {
-          console.error("Init failure:", err);
-        }
-      } else {
-        document.getElementById('status-msg').innerText = "Voice engine blocked by network/extension. Disable ad-blockers.";
-      }
+    function showError(message) {
+      document.getElementById('status-msg').innerText = message;
+      document.getElementById('status-text').innerText = "Voice demo unavailable";
+      document.getElementById('status-dot').style.backgroundColor = "#ef4444";
     }
 
-    window.addEventListener('load', initVapi);
+    function attachVapiEvents() {
+      vapiInstance.on('call-start', () => {
+        activeCall = true;
+        document.getElementById('status-msg').innerText = "";
+        setButtonState('connected');
+      });
+
+      vapiInstance.on('call-end', () => {
+        activeCall = false;
+        setButtonState('disconnected');
+      });
+
+      vapiInstance.on('error', (error) => {
+        console.error('Vapi Error:', error);
+        activeCall = false;
+        setButtonState('disconnected');
+        showError('Vapi rejected the call. Check the Public Key, Assistant ID, and allowed website origin in Vapi.');
+      });
+    }
+
+    function initVapi() {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        try {
+          if (!window.vapiSDK || typeof window.vapiSDK.run !== 'function') {
+            throw new Error('Vapi browser SDK did not expose window.vapiSDK.run');
+          }
+
+          vapiInstance = window.vapiSDK.run({
+            apiKey: PUBLIC_KEY,
+            assistant: ASSISTANT_ID,
+            config: {
+              position: 'bottom-right',
+              offset: '0px',
+              width: '1px',
+              height: '1px'
+            }
+          });
+
+          if (!vapiInstance) {
+            throw new Error('Vapi failed to initialize');
+          }
+
+          attachVapiEvents();
+          document.getElementById('call-btn').disabled = false;
+          document.getElementById('status-text').innerText = 'AI Receptionist Ready to Speak';
+          document.getElementById('status-dot').style.backgroundColor = '#34d399';
+          document.getElementById('status-msg').innerText = '';
+        } catch (error) {
+          console.error('Vapi init failure:', error);
+          showError('Voice engine could not initialize. Open the browser console for details.');
+        }
+      };
+
+      script.onerror = () => {
+        showError('Voice engine failed to load. Please check network or content-blocker settings.');
+      };
+
+      document.head.appendChild(script);
+    }
 
     async function handleCallClick() {
       const msg = document.getElementById('status-msg');
+      msg.innerText = '';
 
       if (!vapiInstance) {
-        initVapi();
-        if (!vapiInstance) {
-          msg.innerText = "Script blocked. Please disable ad-blockers/Brave Shield.";
-          return;
-        }
+        showError('Voice engine is not ready yet.');
+        return;
       }
 
       if (!activeCall) {
         setButtonState('connecting');
-
         try {
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-          msg.innerText = "Microphone access denied by browser.";
+          await vapiInstance.start(ASSISTANT_ID);
+        } catch (error) {
+          console.error('Call start failure:', error);
+          activeCall = false;
           setButtonState('disconnected');
-          return;
+          showError('Call could not start. Check the Vapi Public Key, Assistant ID, allowed origin, and microphone permission.');
         }
-
-        vapiInstance.start(ASSISTANT_ID);
       } else {
-        vapiInstance.stop();
+        try {
+          await vapiInstance.stop();
+        } catch (error) {
+          console.error('Call stop failure:', error);
+        }
       }
     }
 
@@ -198,22 +232,27 @@
       const statusText = document.getElementById('status-text');
       const statusDot = document.getElementById('status-dot');
 
+      btn.disabled = false;
+
       if (state === 'connecting') {
-        btn.innerText = "Connecting...";
-        btn.className = "connecting";
+        btn.innerText = 'Connecting…';
+        btn.className = 'connecting';
+        statusText.innerText = 'Connecting to AI Receptionist…';
+        statusDot.style.backgroundColor = '#f59e0b';
       } else if (state === 'connected') {
-        btn.innerText = "End Call";
-        btn.className = "connected";
-        statusText.innerText = "Call Connected — Speak Now";
-        statusDot.style.backgroundColor = "#ef4444";
+        btn.innerText = 'End Call';
+        btn.className = 'connected';
+        statusText.innerText = 'Call Connected — Speak Now';
+        statusDot.style.backgroundColor = '#ef4444';
       } else {
-        btn.innerText = "Start Demo Call";
-        btn.className = "";
-        statusText.innerText = "AI Receptionist Ready to Speak";
-        statusDot.style.backgroundColor = "#34d399";
+        btn.innerText = 'Start Demo Call';
+        btn.className = '';
+        statusText.innerText = 'AI Receptionist Ready to Speak';
+        statusDot.style.backgroundColor = '#34d399';
       }
     }
-  </script>
 
+    window.addEventListener('load', initVapi);
+  </script>
 </body>
 </html>
