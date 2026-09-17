@@ -37,6 +37,16 @@ const localeLabels = {
   }
 };
 
+function applyVaiceBrand() {
+  document.title = document.title.replace(/VOICES/g, 'VAICE');
+  document.querySelectorAll('.brand').forEach((element) => {
+    element.textContent = element.textContent.replace(/VOICES/g, 'VAICE');
+  });
+  document.querySelectorAll('footer strong').forEach((element) => {
+    if (element.textContent.trim() === 'VOICES') element.textContent = 'VAICE';
+  });
+}
+
 function label(key, fallback) {
   const pageLabels = localeLabels[pageLanguage] || localeLabels.en;
   return (demoConfig.labels && demoConfig.labels[key]) || pageLabels[key] || fallback;
@@ -45,7 +55,7 @@ function label(key, fallback) {
 function showError(message) {
   document.getElementById('status-msg').innerText = message;
   document.getElementById('status-text').innerText = label('unavailable', 'Voice demo unavailable');
-  document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+  document.getElementById('status-dot').style.backgroundColor = '#ef5f6c';
 }
 
 function getIndustryContext() {
@@ -93,6 +103,7 @@ function attachVapiEvents() {
 }
 
 function initVapi() {
+  applyVaiceBrand();
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
   script.async = true;
@@ -112,7 +123,7 @@ function initVapi() {
       document.getElementById('call-btn').disabled = false;
       document.getElementById('call-btn').innerText = label('start', localeLabels.en.start);
       document.getElementById('status-text').innerText = demoConfig.readyText || label('ready', localeLabels.en.ready);
-      document.getElementById('status-dot').style.backgroundColor = '#34d399';
+      document.getElementById('status-dot').style.backgroundColor = '#45d69c';
       document.getElementById('status-msg').innerText = '';
     } catch (error) {
       console.error('Vapi init failure:', error);
@@ -155,17 +166,17 @@ function setButtonState(state) {
     btn.innerText = label('connectingButton', localeLabels.en.connectingButton);
     btn.className = 'connecting';
     statusText.innerText = label('connectingStatus', localeLabels.en.connectingStatus);
-    statusDot.style.backgroundColor = '#f59e0b';
+    statusDot.style.backgroundColor = '#f5b942';
   } else if (state === 'connected') {
     btn.innerText = label('end', localeLabels.en.end);
     btn.className = 'connected';
     statusText.innerText = label('connected', localeLabels.en.connected);
-    statusDot.style.backgroundColor = '#ef4444';
+    statusDot.style.backgroundColor = '#ef5f6c';
   } else {
     btn.innerText = label('start', localeLabels.en.start);
     btn.className = '';
     statusText.innerText = demoConfig.readyText || label('ready', localeLabels.en.ready);
-    statusDot.style.backgroundColor = '#34d399';
+    statusDot.style.backgroundColor = '#45d69c';
   }
 }
 
