@@ -8,9 +8,38 @@ const demoConfig = window.VOICES_DEMO_CONFIG || {};
 const assistantMap = window.VOICES_ASSISTANTS || {};
 const industryAssistantId = demoConfig.industryKey ? assistantMap[demoConfig.industryKey] : '';
 const ACTIVE_ASSISTANT_ID = industryAssistantId || FALLBACK_ASSISTANT_ID;
+const pageLanguage = (document.documentElement.lang || 'en').toLowerCase().split('-')[0];
+
+const localeLabels = {
+  en: {
+    start: 'Start Demo Call', connectingButton: 'Connecting…', end: 'End Call',
+    connectingStatus: 'Connecting to AI Receptionist…', connected: 'Call Connected — Speak Now',
+    ready: 'AI Receptionist Ready to Speak', unavailable: 'Voice demo unavailable',
+    callError: 'The demo call could not connect. Please check microphone permission and try again.',
+    engineError: 'Voice engine could not initialize.', loadError: 'Voice engine failed to load. Please check network or content-blocker settings.',
+    notReady: 'Voice engine is not ready yet.', startError: 'Call could not start. Please allow microphone access and try again.'
+  },
+  es: {
+    start: 'Iniciar llamada de prueba', connectingButton: 'Conectando…', end: 'Finalizar llamada',
+    connectingStatus: 'Conectando con la recepcionista IA…', connected: 'Llamada conectada — Habla ahora',
+    ready: 'Recepcionista IA lista para hablar', unavailable: 'Demo de voz no disponible',
+    callError: 'No se ha podido conectar la llamada. Comprueba el permiso del micrófono e inténtalo de nuevo.',
+    engineError: 'No se ha podido iniciar el motor de voz.', loadError: 'No se ha podido cargar el motor de voz. Comprueba la conexión o los bloqueadores de contenido.',
+    notReady: 'El motor de voz todavía no está listo.', startError: 'No se ha podido iniciar la llamada. Permite el acceso al micrófono e inténtalo de nuevo.'
+  },
+  de: {
+    start: 'Demo-Anruf starten', connectingButton: 'Verbindung wird hergestellt…', end: 'Anruf beenden',
+    connectingStatus: 'Verbindung zur KI-Rezeption wird hergestellt…', connected: 'Anruf verbunden — Jetzt sprechen',
+    ready: 'KI-Rezeption ist bereit', unavailable: 'Sprachdemo nicht verfügbar',
+    callError: 'Der Demo-Anruf konnte nicht verbunden werden. Bitte Mikrofonfreigabe prüfen und erneut versuchen.',
+    engineError: 'Die Sprachfunktion konnte nicht initialisiert werden.', loadError: 'Die Sprachfunktion konnte nicht geladen werden. Bitte Verbindung oder Inhaltsblocker prüfen.',
+    notReady: 'Die Sprachfunktion ist noch nicht bereit.', startError: 'Der Anruf konnte nicht gestartet werden. Bitte Mikrofonzugriff erlauben und erneut versuchen.'
+  }
+};
 
 function label(key, fallback) {
-  return (demoConfig.labels && demoConfig.labels[key]) || fallback;
+  const pageLabels = localeLabels[pageLanguage] || localeLabels.en;
+  return (demoConfig.labels && demoConfig.labels[key]) || pageLabels[key] || fallback;
 }
 
 function showError(message) {
@@ -22,10 +51,9 @@ function showError(message) {
 function getIndustryContext() {
   const main = document.querySelector('main');
   const pageContext = main ? main.innerText.replace(/\s+/g, ' ').trim() : '';
-  const language = document.documentElement.lang || 'en';
 
   return [
-    `You are demonstrating an AI receptionist for the business sector described on this page. Respond in the page language (${language}) unless the caller changes language.`,
+    `You are demonstrating an AI receptionist for the business sector described on this page. Respond in the page language (${pageLanguage}) unless the caller changes language.`,
     'Act like a professional, friendly receptionist for that sector and use the page context below to understand the types of calls this demo should handle.',
     'Keep responses concise and conversational.',
     'This is a demonstration: do not claim that a real booking, appointment, reservation, viewing, service visit, consultation, inventory check, price quote, or other action has been confirmed unless an actual connected tool confirms it.',
@@ -37,13 +65,9 @@ function getIndustryContext() {
 
 function injectIndustryContext() {
   const message = { role: 'system', content: getIndustryContext() };
-
   try {
-    if (typeof vapiInstance.addMessage === 'function') {
-      vapiInstance.addMessage(message);
-    } else if (typeof vapiInstance.send === 'function') {
-      vapiInstance.send({ type: 'add-message', message });
-    }
+    if (typeof vapiInstance.addMessage === 'function') vapiInstance.addMessage(message);
+    else if (typeof vapiInstance.send === 'function') vapiInstance.send({ type: 'add-message', message });
   } catch (error) {
     console.warn('Could not inject industry demo context:', error);
   }
@@ -56,17 +80,15 @@ function attachVapiEvents() {
     document.getElementById('status-msg').innerText = '';
     setButtonState('connected');
   });
-
   vapiInstance.on('call-end', () => {
     activeCall = false;
     setButtonState('disconnected');
   });
-
   vapiInstance.on('error', (error) => {
     console.error('Vapi Error:', error);
     activeCall = false;
     setButtonState('disconnected');
-    showError(label('callError', 'The demo call could not connect. Please check microphone permission and try again.'));
+    showError(label('callError', localeLabels.en.callError));
   });
 }
 
@@ -75,78 +97,52 @@ function initVapi() {
   script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
   script.async = true;
   script.defer = true;
-
   script.onload = () => {
     try {
-      if (!window.vapiSDK || typeof window.vapiSDK.run !== 'function') {
-        throw new Error('Vapi browser SDK did not expose window.vapiSDK.run');
-      }
-
-      const assistantOverrides = demoConfig.firstMessage
-        ? { firstMessage: demoConfig.firstMessage }
-        : undefined;
-
+      if (!window.vapiSDK || typeof window.vapiSDK.run !== 'function') throw new Error('Vapi browser SDK did not expose window.vapiSDK.run');
+      const assistantOverrides = demoConfig.firstMessage ? { firstMessage: demoConfig.firstMessage } : undefined;
       vapiInstance = window.vapiSDK.run({
         apiKey: PUBLIC_KEY,
         assistant: ACTIVE_ASSISTANT_ID,
         assistantOverrides,
-        config: {
-          position: 'bottom-right',
-          offset: '0px',
-          width: '1px',
-          height: '1px'
-        }
+        config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
       });
-
       if (!vapiInstance) throw new Error('Vapi failed to initialize');
-
       attachVapiEvents();
       document.getElementById('call-btn').disabled = false;
-      document.getElementById('call-btn').innerText = label('start', 'Start Demo Call');
-      document.getElementById('status-text').innerText = demoConfig.readyText || label('ready', 'AI Receptionist Ready to Speak');
+      document.getElementById('call-btn').innerText = label('start', localeLabels.en.start);
+      document.getElementById('status-text').innerText = demoConfig.readyText || label('ready', localeLabels.en.ready);
       document.getElementById('status-dot').style.backgroundColor = '#34d399';
       document.getElementById('status-msg').innerText = '';
     } catch (error) {
       console.error('Vapi init failure:', error);
-      showError(label('engineError', 'Voice engine could not initialize.'));
+      showError(label('engineError', localeLabels.en.engineError));
     }
   };
-
-  script.onerror = () => {
-    showError(label('loadError', 'Voice engine failed to load. Please check network or content-blocker settings.'));
-  };
-
+  script.onerror = () => showError(label('loadError', localeLabels.en.loadError));
   document.head.appendChild(script);
 }
 
 async function handleCallClick() {
   const msg = document.getElementById('status-msg');
   msg.innerText = '';
-
   if (!vapiInstance) {
-    showError(label('notReady', 'Voice engine is not ready yet.'));
+    showError(label('notReady', localeLabels.en.notReady));
     return;
   }
-
   if (!activeCall) {
     setButtonState('connecting');
     try {
-      const assistantOverrides = demoConfig.firstMessage
-        ? { firstMessage: demoConfig.firstMessage }
-        : undefined;
+      const assistantOverrides = demoConfig.firstMessage ? { firstMessage: demoConfig.firstMessage } : undefined;
       await vapiInstance.start(ACTIVE_ASSISTANT_ID, assistantOverrides);
     } catch (error) {
       console.error('Call start failure:', error);
       activeCall = false;
       setButtonState('disconnected');
-      showError(label('startError', 'Call could not start. Please allow microphone access and try again.'));
+      showError(label('startError', localeLabels.en.startError));
     }
   } else {
-    try {
-      await vapiInstance.stop();
-    } catch (error) {
-      console.error('Call stop failure:', error);
-    }
+    try { await vapiInstance.stop(); } catch (error) { console.error('Call stop failure:', error); }
   }
 }
 
@@ -154,23 +150,21 @@ function setButtonState(state) {
   const btn = document.getElementById('call-btn');
   const statusText = document.getElementById('status-text');
   const statusDot = document.getElementById('status-dot');
-
   btn.disabled = false;
-
   if (state === 'connecting') {
-    btn.innerText = label('connectingButton', 'Connecting…');
+    btn.innerText = label('connectingButton', localeLabels.en.connectingButton);
     btn.className = 'connecting';
-    statusText.innerText = label('connectingStatus', 'Connecting to AI Receptionist…');
+    statusText.innerText = label('connectingStatus', localeLabels.en.connectingStatus);
     statusDot.style.backgroundColor = '#f59e0b';
   } else if (state === 'connected') {
-    btn.innerText = label('end', 'End Call');
+    btn.innerText = label('end', localeLabels.en.end);
     btn.className = 'connected';
-    statusText.innerText = label('connected', 'Call Connected — Speak Now');
+    statusText.innerText = label('connected', localeLabels.en.connected);
     statusDot.style.backgroundColor = '#ef4444';
   } else {
-    btn.innerText = label('start', 'Start Demo Call');
+    btn.innerText = label('start', localeLabels.en.start);
     btn.className = '';
-    statusText.innerText = demoConfig.readyText || label('ready', 'AI Receptionist Ready to Speak');
+    statusText.innerText = demoConfig.readyText || label('ready', localeLabels.en.ready);
     statusDot.style.backgroundColor = '#34d399';
   }
 }
