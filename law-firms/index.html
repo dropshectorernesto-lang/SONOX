@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICES — Law Firm AI Receptionist Demo</title>
+  <link rel="stylesheet" href="../assets/industry-demo.css">
+  <script>
+    window.VOICES_DEMO_CONFIG = {
+      readyText: 'Law Firm AI Receptionist Ready',
+      firstMessage: 'Thank you for calling. How can I help with your consultation or general firm information today?'
+    };
+  </script>
+  <script src="../assets/industry-demo.js" defer></script>
+</head>
+<body>
+  <nav><div class="brand">VOICES</div><div class="badge">Law Firm Demo</div></nav>
+  <main>
+    <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+    <div class="eyebrow">AI Receptionist for Law Firms</div>
+    <h1>Capture New Client Inquiries Before They Call Another Firm</h1>
+    <p class="subtext">Use an AI receptionist to handle first-contact calls, collect basic intake information, route practice-area inquiries and help prospective clients request a consultation.</p>
+    <div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
+    <div class="card">
+      <h3>Try these on the call</h3>
+      <ul>
+        <li><span class="bullet">&gt;</span><span>“I’d like to speak with someone about a contract dispute. Can I arrange a consultation?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“What areas of law does your firm handle?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“What information should I have ready before my first consultation?”</span></li>
+      </ul>
+    </div>
+    <p class="note">Demo focused on intake, routing and scheduling. It is not intended to provide legal advice.</p>
+  </main>
+  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+</body>
+</html>
