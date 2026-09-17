@@ -12,9 +12,39 @@ function showError(message) {
   document.getElementById('status-dot').style.backgroundColor = '#ef4444';
 }
 
+function getIndustryContext() {
+  const main = document.querySelector('main');
+  const pageContext = main ? main.innerText.replace(/\s+/g, ' ').trim() : '';
+
+  return [
+    'You are demonstrating an AI receptionist for the business sector described on this page.',
+    'Act like a professional, friendly receptionist for that sector and use the page context below to understand the types of calls this demo should handle.',
+    'Keep responses concise and conversational.',
+    'This is a demonstration: do not claim that a real booking, appointment, reservation, viewing, service visit, consultation, inventory check, price quote, or other action has been confirmed unless an actual connected tool confirms it.',
+    'For medical, dental, aesthetic or treatment-related topics, do not diagnose, recommend treatment, or provide emergency guidance beyond directing the caller to appropriate professional or emergency care.',
+    'For legal topics, do not provide legal advice; focus on intake, routing and consultation scheduling.',
+    `Page context: ${pageContext}`
+  ].join(' ');
+}
+
+function injectIndustryContext() {
+  const message = { role: 'system', content: getIndustryContext() };
+
+  try {
+    if (typeof vapiInstance.addMessage === 'function') {
+      vapiInstance.addMessage(message);
+    } else if (typeof vapiInstance.send === 'function') {
+      vapiInstance.send({ type: 'add-message', message });
+    }
+  } catch (error) {
+    console.warn('Could not inject industry demo context:', error);
+  }
+}
+
 function attachVapiEvents() {
   vapiInstance.on('call-start', () => {
     activeCall = true;
+    injectIndustryContext();
     document.getElementById('status-msg').innerText = '';
     setButtonState('connected');
   });
