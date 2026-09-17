@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICES — Property Management AI Receptionist Demo</title>
+  <link rel="stylesheet" href="../assets/industry-demo.css">
+  <script>
+    window.VOICES_DEMO_CONFIG = {
+      readyText: 'Property Management AI Ready',
+      firstMessage: 'Thanks for calling. How can I help with maintenance, leasing or a general property question today?'
+    };
+  </script>
+  <script src="../assets/industry-demo.js" defer></script>
+</head>
+<body>
+  <nav><div class="brand">VOICES</div><div class="badge">Property Management Demo</div></nav>
+  <main>
+    <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+    <div class="eyebrow">AI Receptionist for Property Managers</div>
+    <h1>Handle Tenant and Leasing Calls Around the Clock</h1>
+    <p class="subtext">Give tenants and prospects an immediate response for maintenance requests, leasing questions and general property inquiries without overwhelming your team.</p>
+    <div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
+    <div class="card">
+      <h3>Try these on the call</h3>
+      <ul>
+        <li><span class="bullet">&gt;</span><span>“There’s a leak under my kitchen sink. I need to report a maintenance issue.”</span></li>
+        <li><span class="bullet">&gt;</span><span>“I saw an apartment for rent and would like to arrange a viewing.”</span></li>
+        <li><span class="bullet">&gt;</span><span>“Who should I contact about my lease renewal?”</span></li>
+      </ul>
+    </div>
+  </main>
+  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+</body>
+</html>
