@@ -15,8 +15,10 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 .brand { font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 0.05em; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
 .badge {
   font-size: 11px;
   background: rgba(59, 130, 246, 0.1);
@@ -28,6 +30,18 @@ nav {
   font-weight: 600;
   letter-spacing: 0.05em;
 }
+.lang-switch { display: inline-flex; gap: 4px; align-items: center; }
+.lang-switch a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.lang-switch a:hover { color: #cbd5e1; }
+.lang-switch a.active { color: #ffffff; background: #1e293b; }
 main { max-width: 820px; margin: 0 auto; padding: 48px 24px; text-align: center; width: 100%; }
 .eyebrow { color: #60a5fa; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
 .status-pill {
@@ -84,7 +98,8 @@ footer { border-top: 1px solid #1e293b; padding: 24px; text-align: center; color
 #status-msg { margin-top: 14px; font-size: 13px; color: #f59e0b; min-height: 20px; }
 #vapi-support-btn { display: none !important; }
 @media (max-width: 640px) {
-  nav { padding: 14px 16px; }
+  nav { padding: 14px 16px; align-items: flex-start; }
+  .nav-right { flex-direction: column; align-items: flex-end; gap: 7px; }
   main { padding: 36px 18px; }
   .badge { font-size: 9px; padding: 4px 9px; }
   .card { padding: 24px; }
