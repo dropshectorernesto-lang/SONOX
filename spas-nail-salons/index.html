@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICES — Spa & Nail Salon AI Receptionist Demo</title>
+  <link rel="stylesheet" href="../assets/industry-demo.css">
+  <script>
+    window.VOICES_DEMO_CONFIG = {
+      readyText: 'Salon AI Receptionist Ready',
+      firstMessage: 'Hi, thanks for calling. How can I help with your treatment or appointment today?'
+    };
+  </script>
+  <script src="../assets/industry-demo.js" defer></script>
+</head>
+<body>
+  <nav><div class="brand">VOICES</div><div class="badge">Spa & Nail Salon Demo</div></nav>
+  <main>
+    <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+    <div class="eyebrow">AI Receptionist for Beauty Businesses</div>
+    <h1>Fill More Appointments Without Answering Every Call</h1>
+    <p class="subtext">Let clients ask about services, prices and availability while your team stays focused on treatments instead of constantly picking up the phone.</p>
+    <div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
+    <div class="card">
+      <h3>Try these on the call</h3>
+      <ul>
+        <li><span class="bullet">&gt;</span><span>“Do you have any availability for a gel manicure this Friday?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“How much is a 60-minute massage and how long should I allow?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“I need to move my appointment to another day. Can you help?”</span></li>
+      </ul>
+    </div>
+  </main>
+  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+</body>
+</html>
