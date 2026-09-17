@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOICES — Restaurant AI Receptionist Demo</title>
+  <link rel="stylesheet" href="../assets/industry-demo.css">
+  <script>
+    window.VOICES_DEMO_CONFIG = {
+      readyText: 'Restaurant AI Receptionist Ready',
+      firstMessage: 'Thanks for calling. How can I help with your reservation or restaurant information today?'
+    };
+  </script>
+  <script src="../assets/industry-demo.js" defer></script>
+</head>
+<body>
+  <nav><div class="brand">VOICES</div><div class="badge">Restaurant Demo</div></nav>
+  <main>
+    <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+    <div class="eyebrow">AI Receptionist for Restaurants</div>
+    <h1>Answer Every Reservation Call, Even During Service</h1>
+    <p class="subtext">Let guests ask about availability, opening hours, menus and group bookings while your team stays focused on the dining room.</p>
+    <div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
+    <div class="card">
+      <h3>Try these on the call</h3>
+      <ul>
+        <li><span class="bullet">&gt;</span><span>“Can I book a table for four this Saturday at 8 PM?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“Do you have vegetarian options and what time does the kitchen close?”</span></li>
+        <li><span class="bullet">&gt;</span><span>“I’m planning dinner for 14 people. Can someone help me with a group booking?”</span></li>
+      </ul>
+    </div>
+  </main>
+  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+</body>
+</html>
