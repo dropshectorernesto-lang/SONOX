@@ -1,36 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VOICES — Medical & Dental AI Receptionist Demo</title>
   <link rel="stylesheet" href="../assets/industry-demo.css">
-  <script>
-    window.VOICES_DEMO_CONFIG = {
-      readyText: 'Patient Reception AI Ready',
-      firstMessage: 'Thank you for calling. How can I help with your appointment or general practice information today?'
-    };
-  </script>
+  <script src="../assets/assistant-config.js"></script>
+  <script>window.VOICES_DEMO_CONFIG={industryKey:'medicalDental',readyText:'Patient Reception AI Ready',firstMessage:'Thank you for calling. How can I help with your appointment or general practice information today?'};</script>
   <script src="../assets/industry-demo.js" defer></script>
 </head>
 <body>
-  <nav><div class="brand">VOICES</div><div class="badge">Medical & Dental Demo</div></nav>
-  <main>
-    <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
-    <div class="eyebrow">AI Receptionist for Practices</div>
-    <h1>Handle Patient Calls Without the Front-Desk Bottleneck</h1>
-    <p class="subtext">Give patients a fast way to request appointments, reschedule visits and get routine practice information while your team stays focused on in-person care.</p>
-    <div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
-    <div class="card">
-      <h3>Try these on the call</h3>
-      <ul>
-        <li><span class="bullet">&gt;</span><span>“I’d like to book a dental cleaning next week. What availability do you have?”</span></li>
-        <li><span class="bullet">&gt;</span><span>“I need to reschedule my appointment. Can you help me?”</span></li>
-        <li><span class="bullet">&gt;</span><span>“What services does the practice offer and what are your opening hours?”</span></li>
-      </ul>
-    </div>
-    <p class="note">Demo focused on scheduling and administrative support. It is not intended to provide diagnosis, treatment advice or emergency medical guidance.</p>
-  </main>
-  <footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
-</body>
-</html>
+<nav><div class="brand">VOICES</div><div class="nav-right"><div class="badge">Medical & Dental Demo</div><div class="lang-switch"><a class="active" href="./">EN</a><a href="./es/">ES</a><a href="./de/">DE</a></div></div></nav>
+<main>
+<div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+<div class="eyebrow">AI Receptionist for Practices</div><h1>Handle Patient Calls Without the Front-Desk Bottleneck</h1>
+<p class="subtext">Give patients a fast way to request appointments, reschedule visits and get routine practice information while your team stays focused on in-person care.</p>
+<div class="call-container"><button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button><div id="status-msg"></div></div>
+<div class="card"><h3>Try these on the call</h3><ul><li><span class="bullet">&gt;</span><span>“I’d like to book a dental cleaning next week. What availability do you have?”</span></li><li><span class="bullet">&gt;</span><span>“I need to reschedule my appointment. Can you help me?”</span></li><li><span class="bullet">&gt;</span><span>“What services does the practice offer and what are your opening hours?”</span></li></ul></div>
+<p class="note">Demo focused on scheduling and administrative support. It is not intended to provide diagnosis, treatment advice or emergency medical guidance.</p>
+</main><footer>Powered by <strong>VOICES</strong> Automation Platform</footer>
+</body></html>
