@@ -1,4 +1,4 @@
-// VAICE industry assistant configuration.
+// Sonox industry assistant configuration.
 // Replace an empty string with the Vapi Assistant ID for that industry.
 // Example: realEstate: '12345678-1234-1234-1234-123456789abc'
 //
@@ -19,6 +19,6 @@ window.VOICES_ASSISTANTS = {
 
 // Optional hard call limits per industry, in seconds.
 // Real Estate is capped at 120 seconds to control demo usage costs.
-window.VAICE_CALL_LIMITS = {
+window.SONOX_CALL_LIMITS = {
   realEstate: 120
 };
