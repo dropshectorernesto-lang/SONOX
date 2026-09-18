@@ -8,7 +8,7 @@ let endedByDemoLimit = false;
 
 const demoConfig = window.VOICES_DEMO_CONFIG || {};
 const assistantMap = window.VOICES_ASSISTANTS || {};
-const callLimitMap = window.VAICE_CALL_LIMITS || {};
+const callLimitMap = window.SONOX_CALL_LIMITS || window.VAICE_CALL_LIMITS || {};
 const industryAssistantId = demoConfig.industryKey ? assistantMap[demoConfig.industryKey] : '';
 const ACTIVE_ASSISTANT_ID = industryAssistantId || FALLBACK_ASSISTANT_ID;
 const ACTIVE_MAX_DURATION_SECONDS = demoConfig.industryKey ? Number(callLimitMap[demoConfig.industryKey] || 0) : 0;
@@ -44,13 +44,13 @@ const localeLabels = {
   }
 };
 
-function applyVaiceBrand() {
-  document.title = document.title.replace(/VOICES/g, 'VAICE');
+function applySonoxBrand() {
+  document.title = document.title.replace(/(VOICES|VAICE)/g, 'Sonox');
   document.querySelectorAll('.brand').forEach((element) => {
-    element.textContent = element.textContent.replace(/VOICES/g, 'VAICE');
+    element.textContent = element.textContent.replace(/(VOICES|VAICE)/g, 'Sonox');
   });
   document.querySelectorAll('footer strong').forEach((element) => {
-    if (element.textContent.trim() === 'VOICES') element.textContent = 'VAICE';
+    if (['VOICES', 'VAICE'].includes(element.textContent.trim())) element.textContent = 'Sonox';
   });
 }
 
@@ -154,7 +154,7 @@ function attachVapiEvents() {
 }
 
 function initVapi() {
-  applyVaiceBrand();
+  applySonoxBrand();
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
   script.async = true;
