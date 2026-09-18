@@ -1,4 +1,4 @@
-# VOICES — Industry Demo Pages
+# Sonox — Industry Demo Pages
 
 This repository contains client-facing AI receptionist demos for nine industries, each available in English, Spanish and German.
 
