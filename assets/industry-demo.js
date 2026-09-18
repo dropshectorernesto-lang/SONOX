@@ -3,11 +3,15 @@ const FALLBACK_ASSISTANT_ID = "c50dd38e-dcb2-4ca3-b696-f489d99b0cca";
 
 let vapiInstance = null;
 let activeCall = false;
+let callLimitTimer = null;
+let endedByDemoLimit = false;
 
 const demoConfig = window.VOICES_DEMO_CONFIG || {};
 const assistantMap = window.VOICES_ASSISTANTS || {};
+const callLimitMap = window.VAICE_CALL_LIMITS || {};
 const industryAssistantId = demoConfig.industryKey ? assistantMap[demoConfig.industryKey] : '';
 const ACTIVE_ASSISTANT_ID = industryAssistantId || FALLBACK_ASSISTANT_ID;
+const ACTIVE_MAX_DURATION_SECONDS = demoConfig.industryKey ? Number(callLimitMap[demoConfig.industryKey] || 0) : 0;
 const pageLanguage = (document.documentElement.lang || 'en').toLowerCase().split('-')[0];
 
 const localeLabels = {
@@ -17,7 +21,8 @@ const localeLabels = {
     ready: 'AI Receptionist Ready to Speak', unavailable: 'Voice demo unavailable',
     callError: 'The demo call could not connect. Please check microphone permission and try again.',
     engineError: 'Voice engine could not initialize.', loadError: 'Voice engine failed to load. Please check network or content-blocker settings.',
-    notReady: 'Voice engine is not ready yet.', startError: 'Call could not start. Please allow microphone access and try again.'
+    notReady: 'Voice engine is not ready yet.', startError: 'Call could not start. Please allow microphone access and try again.',
+    timeLimitEnded: 'Demo ended automatically after the 2-minute limit.'
   },
   es: {
     start: 'Iniciar llamada de prueba', connectingButton: 'Conectando…', end: 'Finalizar llamada',
@@ -25,7 +30,8 @@ const localeLabels = {
     ready: 'Recepcionista IA lista para hablar', unavailable: 'Demo de voz no disponible',
     callError: 'No se ha podido conectar la llamada. Comprueba el permiso del micrófono e inténtalo de nuevo.',
     engineError: 'No se ha podido iniciar el motor de voz.', loadError: 'No se ha podido cargar el motor de voz. Comprueba la conexión o los bloqueadores de contenido.',
-    notReady: 'El motor de voz todavía no está listo.', startError: 'No se ha podido iniciar la llamada. Permite el acceso al micrófono e inténtalo de nuevo.'
+    notReady: 'El motor de voz todavía no está listo.', startError: 'No se ha podido iniciar la llamada. Permite el acceso al micrófono e inténtalo de nuevo.',
+    timeLimitEnded: 'La demo ha finalizado automáticamente tras el límite de 2 minutos.'
   },
   de: {
     start: 'Demo-Anruf starten', connectingButton: 'Verbindung wird hergestellt…', end: 'Anruf beenden',
@@ -33,7 +39,8 @@ const localeLabels = {
     ready: 'KI-Rezeption ist bereit', unavailable: 'Sprachdemo nicht verfügbar',
     callError: 'Der Demo-Anruf konnte nicht verbunden werden. Bitte Mikrofonfreigabe prüfen und erneut versuchen.',
     engineError: 'Die Sprachfunktion konnte nicht initialisiert werden.', loadError: 'Die Sprachfunktion konnte nicht geladen werden. Bitte Verbindung oder Inhaltsblocker prüfen.',
-    notReady: 'Die Sprachfunktion ist noch nicht bereit.', startError: 'Der Anruf konnte nicht gestartet werden. Bitte Mikrofonzugriff erlauben und erneut versuchen.'
+    notReady: 'Die Sprachfunktion ist noch nicht bereit.', startError: 'Der Anruf konnte nicht gestartet werden. Bitte Mikrofonzugriff erlauben und erneut versuchen.',
+    timeLimitEnded: 'Die Demo wurde nach dem 2-Minuten-Limit automatisch beendet.'
   }
 };
 
@@ -83,20 +90,64 @@ function injectIndustryContext() {
   }
 }
 
+function clearCallLimitTimer() {
+  if (callLimitTimer) {
+    clearTimeout(callLimitTimer);
+    callLimitTimer = null;
+  }
+}
+
+function startCallLimitTimer() {
+  clearCallLimitTimer();
+  endedByDemoLimit = false;
+
+  if (!ACTIVE_MAX_DURATION_SECONDS || ACTIVE_MAX_DURATION_SECONDS <= 0) return;
+
+  callLimitTimer = window.setTimeout(async () => {
+    if (!activeCall || !vapiInstance) return;
+
+    endedByDemoLimit = true;
+    try {
+      await vapiInstance.stop();
+    } catch (error) {
+      console.error('Automatic demo call stop failure:', error);
+    }
+  }, ACTIVE_MAX_DURATION_SECONDS * 1000);
+}
+
+function getAssistantOverrides() {
+  const overrides = {};
+
+  if (demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
+  if (ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
+
+  return Object.keys(overrides).length ? overrides : undefined;
+}
+
 function attachVapiEvents() {
   vapiInstance.on('call-start', () => {
     activeCall = true;
     injectIndustryContext();
+    startCallLimitTimer();
     document.getElementById('status-msg').innerText = '';
     setButtonState('connected');
   });
+
   vapiInstance.on('call-end', () => {
     activeCall = false;
+    clearCallLimitTimer();
     setButtonState('disconnected');
+
+    if (endedByDemoLimit) {
+      document.getElementById('status-msg').innerText = label('timeLimitEnded', localeLabels.en.timeLimitEnded);
+      endedByDemoLimit = false;
+    }
   });
+
   vapiInstance.on('error', (error) => {
     console.error('Vapi Error:', error);
     activeCall = false;
+    clearCallLimitTimer();
     setButtonState('disconnected');
     showError(label('callError', localeLabels.en.callError));
   });
@@ -111,14 +162,16 @@ function initVapi() {
   script.onload = () => {
     try {
       if (!window.vapiSDK || typeof window.vapiSDK.run !== 'function') throw new Error('Vapi browser SDK did not expose window.vapiSDK.run');
-      const assistantOverrides = demoConfig.firstMessage ? { firstMessage: demoConfig.firstMessage } : undefined;
+
       vapiInstance = window.vapiSDK.run({
         apiKey: PUBLIC_KEY,
         assistant: ACTIVE_ASSISTANT_ID,
-        assistantOverrides,
+        assistantOverrides: getAssistantOverrides(),
         config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
       });
+
       if (!vapiInstance) throw new Error('Vapi failed to initialize');
+
       attachVapiEvents();
       document.getElementById('call-btn').disabled = false;
       document.getElementById('call-btn').innerText = label('start', localeLabels.en.start);
@@ -130,6 +183,7 @@ function initVapi() {
       showError(label('engineError', localeLabels.en.engineError));
     }
   };
+
   script.onerror = () => showError(label('loadError', localeLabels.en.loadError));
   document.head.appendChild(script);
 }
@@ -137,23 +191,31 @@ function initVapi() {
 async function handleCallClick() {
   const msg = document.getElementById('status-msg');
   msg.innerText = '';
+
   if (!vapiInstance) {
     showError(label('notReady', localeLabels.en.notReady));
     return;
   }
+
   if (!activeCall) {
     setButtonState('connecting');
     try {
-      const assistantOverrides = demoConfig.firstMessage ? { firstMessage: demoConfig.firstMessage } : undefined;
-      await vapiInstance.start(ACTIVE_ASSISTANT_ID, assistantOverrides);
+      await vapiInstance.start(ACTIVE_ASSISTANT_ID, getAssistantOverrides());
     } catch (error) {
       console.error('Call start failure:', error);
       activeCall = false;
+      clearCallLimitTimer();
       setButtonState('disconnected');
       showError(label('startError', localeLabels.en.startError));
     }
   } else {
-    try { await vapiInstance.stop(); } catch (error) { console.error('Call stop failure:', error); }
+    try {
+      endedByDemoLimit = false;
+      clearCallLimitTimer();
+      await vapiInstance.stop();
+    } catch (error) {
+      console.error('Call stop failure:', error);
+    }
   }
 }
 
@@ -161,7 +223,9 @@ function setButtonState(state) {
   const btn = document.getElementById('call-btn');
   const statusText = document.getElementById('status-text');
   const statusDot = document.getElementById('status-dot');
+
   btn.disabled = false;
+
   if (state === 'connecting') {
     btn.innerText = label('connectingButton', localeLabels.en.connectingButton);
     btn.className = 'connecting';
