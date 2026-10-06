@@ -10,6 +10,7 @@ window.VOICES_ASSISTANTS = {
   medicalDental: '',
   spasNailSalons: '',
   restaurants: '',
+  hotels: '2cb26f11-e171-4121-8141-2fbd698d1f15',
   hvac: '',
   carDealerships: '',
   lawFirms: '',

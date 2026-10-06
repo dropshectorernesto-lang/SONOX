@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sonox — KI-Hotelrezeption Demo</title>
+  <link rel="stylesheet" href="../../assets/industry-demo.css">
+  <script src="../../assets/assistant-config.js"></script>
+  <script>window.VOICES_DEMO_CONFIG={"industryKey":"hotels","readyText":"KI-Hotelrezeption ist bereit","firstMessage":"Vielen Dank für Ihren Anruf im Hotel. Wie kann ich Ihnen heute bei einem Zimmer, einer Reservierung oder Ihrem Aufenthalt helfen?"};</script>
+  <script src="../../assets/industry-demo.js" defer></script>
+</head>
+<body>
+<nav>
+  <div class="brand">Sonox</div>
+  <div class="nav-right">
+    <div class="badge">Hotel-Demo</div>
+    <div class="lang-switch"><a href="../">EN</a><a href="../es/">ES</a><a class="active" href="./">DE</a></div>
+  </div>
+</nav>
+<main>
+  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Sprachfunktion wird geladen…</span></div>
+  <div class="eyebrow">KI-Rezeption für Hotels</div>
+  <h1>Ein herzlicher Empfang, noch bevor Ihre Gäste anreisen</h1>
+  <p class="subtext">Beantworten Sie rund um die Uhr Fragen zu Zimmerverfügbarkeit, Check-in, Hotelausstattung und Reservierungsänderungen, während sich Ihr Empfangsteam auf die Gäste vor Ort konzentriert.</p>
+  <div class="call-container">
+    <button id="call-btn" onclick="handleCallClick()" disabled>Demo-Anruf starten</button>
+    <div id="status-msg"></div>
+  </div>
+  <div class="card">
+    <h3>Das können Sie im Anruf testen</h3>
+    <ul>
+    <li><span class="bullet">&gt;</span><span>„Haben Sie nächsten Freitag ein Doppelzimmer für zwei Personen frei?“</span></li>
+    <li><span class="bullet">&gt;</span><span>„Bieten Sie einen frühen Check-in, Frühstück oder einen Flughafentransfer an?“</span></li>
+    <li><span class="bullet">&gt;</span><span>„Ich möchte eine bestehende Reservierung ändern. Wie gehe ich vor?“</span></li>
+    </ul>
+  </div>
+  <p class="note">Diese Demo zeigt mögliche Gästebetreuung. Zimmerverfügbarkeit und Buchungsänderungen müssen über ein angebundenes Hotelsystem bestätigt werden.</p>
+</main>
+<footer>Bereitgestellt von <strong>Sonox</strong> Automation Platform</footer>
+</body>
+</html>

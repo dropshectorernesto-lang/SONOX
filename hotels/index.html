@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sonox — Hotel AI Receptionist Demo</title>
+  <link rel="stylesheet" href="../assets/industry-demo.css">
+  <script src="../assets/assistant-config.js"></script>
+  <script>window.VOICES_DEMO_CONFIG={"industryKey":"hotels","readyText":"Hotel AI Receptionist Ready","firstMessage":"Thank you for calling the hotel. How may I help you with a room, reservation or your stay today?"};</script>
+  <script src="../assets/industry-demo.js" defer></script>
+</head>
+<body>
+<nav>
+  <div class="brand">Sonox</div>
+  <div class="nav-right">
+    <div class="badge">Hotel Demo</div>
+    <div class="lang-switch"><a class="active" href="./">EN</a><a href="./es/">ES</a><a href="./de/">DE</a></div>
+  </div>
+</nav>
+<main>
+  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+  <div class="eyebrow">AI Receptionist for Hotels</div>
+  <h1>A Warm Welcome, Even Before Guests Arrive</h1>
+  <p class="subtext">Help guests with room availability, check-in questions, amenities and reservation changes — around the clock, without keeping your front desk on the phone.</p>
+  <div class="call-container">
+    <button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button>
+    <div id="status-msg"></div>
+  </div>
+  <div class="card">
+    <h3>Try these on the call</h3>
+    <ul>
+    <li><span class="bullet">&gt;</span><span>“Do you have a double room available for two guests next Friday?”</span></li>
+    <li><span class="bullet">&gt;</span><span>“Do you offer early check-in, breakfast or airport transfers?”</span></li>
+    <li><span class="bullet">&gt;</span><span>“I need to change an existing reservation. What should I do?”</span></li>
+    </ul>
+  </div>
+  <p class="note">This demo illustrates guest support. Room availability and booking changes must be confirmed through a connected hotel system.</p>
+</main>
+<footer>Powered by <strong>Sonox</strong> Automation Platform</footer>
+</body>
+</html>

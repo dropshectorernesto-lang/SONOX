@@ -1,6 +1,6 @@
 # Sonox — Industry Demo Pages
 
-This repository contains client-facing AI receptionist demos for nine industries, each available in English, Spanish and German.
+This repository contains client-facing AI receptionist demos for ten industries, each available in English, Spanish and German.
 
 ## Industry demos
 
@@ -10,6 +10,7 @@ This repository contains client-facing AI receptionist demos for nine industries
 | Medical & Dental | `/medical-dental/` | `/medical-dental/es/` | `/medical-dental/de/` | `medicalDental` |
 | Spas & Nail Salons | `/spas-nail-salons/` | `/spas-nail-salons/es/` | `/spas-nail-salons/de/` | `spasNailSalons` |
 | Restaurants | `/restaurants/` | `/restaurants/es/` | `/restaurants/de/` | `restaurants` |
+| Hotels | `/hotels/` | `/hotels/es/` | `/hotels/de/` | `hotels` |
 | HVAC | `/hvac/` | `/hvac/es/` | `/hvac/de/` | `hvac` |
 | Car Dealerships | `/car-dealerships/` | `/car-dealerships/es/` | `/car-dealerships/de/` | `carDealerships` |
 | Law Firms | `/law-firms/` | `/law-firms/es/` | `/law-firms/de/` | `lawFirms` |
@@ -34,6 +35,7 @@ window.VOICES_ASSISTANTS = {
   medicalDental: '',
   spasNailSalons: '',
   restaurants: '',
+  hotels: '2cb26f11-e171-4121-8141-2fbd698d1f15',
   hvac: '',
   carDealerships: '',
   lawFirms: '',
@@ -72,7 +74,7 @@ You do **not** need to edit those three pages individually.
 
 If an industry is still empty in `assets/assistant-config.js`, the demo uses the shared fallback assistant currently configured in `assets/industry-demo.js`.
 
-This means the pages can still be tested before all nine dedicated assistants are ready.
+This means the pages can still be tested before all ten dedicated assistants are ready.
 
 Once every industry has its own assistant ID, the fallback is no longer used for those industries.
 
