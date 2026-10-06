@@ -19,7 +19,8 @@ window.VOICES_ASSISTANTS = {
 };
 
 // Optional hard call limits per industry, in seconds.
-// Real Estate is capped at 120 seconds to control demo usage costs.
+// Real Estate and Hotels are capped at 120 seconds to control demo usage costs.
 window.SONOX_CALL_LIMITS = {
-  realEstate: 120
+  realEstate: 120,
+  hotels: 120
 };
