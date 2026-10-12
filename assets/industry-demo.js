@@ -10,14 +10,15 @@ const demoConfig = window.VOICES_DEMO_CONFIG || {};
 const assistantMap = window.VOICES_ASSISTANTS || {};
 const callLimitMap = window.SONOX_CALL_LIMITS || window.VAICE_CALL_LIMITS || {};
 const industryAssistantId = demoConfig.industryKey ? assistantMap[demoConfig.industryKey] : '';
+const HAS_CONFIGURED_ASSISTANT = Boolean(industryAssistantId);
 const ACTIVE_ASSISTANT_ID = industryAssistantId || FALLBACK_ASSISTANT_ID;
 const ACTIVE_MAX_DURATION_SECONDS = demoConfig.industryKey ? Number(callLimitMap[demoConfig.industryKey] || 0) : 0;
 const pageLanguage = (document.documentElement.lang || 'en').toLowerCase().split('-')[0];
 
 const localeLabels = {
   en: {
-    start: 'Start Demo Call', connectingButton: 'Connecting…', end: 'End Call',
-    connectingStatus: 'Connecting to AI Receptionist…', connected: 'Call Connected — Speak Now',
+    start: 'Start Demo Call', connectingButton: 'Connecting...', end: 'End Call',
+    connectingStatus: 'Connecting to AI Receptionist...', connected: 'Call Connected - Speak Now',
     ready: 'AI Receptionist Ready to Speak', unavailable: 'Voice demo unavailable',
     callError: 'The demo call could not connect. Please check microphone permission and try again.',
     engineError: 'Voice engine could not initialize.', loadError: 'Voice engine failed to load. Please check network or content-blocker settings.',
@@ -25,20 +26,20 @@ const localeLabels = {
     timeLimitEnded: 'Demo ended automatically after the 2-minute limit.'
   },
   es: {
-    start: 'Iniciar llamada de prueba', connectingButton: 'Conectando…', end: 'Finalizar llamada',
-    connectingStatus: 'Conectando con la recepcionista IA…', connected: 'Llamada conectada — Habla ahora',
+    start: 'Iniciar llamada de prueba', connectingButton: 'Conectando...', end: 'Finalizar llamada',
+    connectingStatus: 'Conectando con la recepcionista IA...', connected: 'Llamada conectada - Habla ahora',
     ready: 'Recepcionista IA lista para hablar', unavailable: 'Demo de voz no disponible',
-    callError: 'No se ha podido conectar la llamada. Comprueba el permiso del micrófono e inténtalo de nuevo.',
-    engineError: 'No se ha podido iniciar el motor de voz.', loadError: 'No se ha podido cargar el motor de voz. Comprueba la conexión o los bloqueadores de contenido.',
-    notReady: 'El motor de voz todavía no está listo.', startError: 'No se ha podido iniciar la llamada. Permite el acceso al micrófono e inténtalo de nuevo.',
-    timeLimitEnded: 'La demo ha finalizado automáticamente tras el límite de 2 minutos.'
+    callError: 'No se ha podido conectar la llamada. Comprueba el permiso del microfono e intentalo de nuevo.',
+    engineError: 'No se ha podido iniciar el motor de voz.', loadError: 'No se ha podido cargar el motor de voz. Comprueba la conexion o los bloqueadores de contenido.',
+    notReady: 'El motor de voz todavia no esta listo.', startError: 'No se ha podido iniciar la llamada. Permite el acceso al microfono e intentalo de nuevo.',
+    timeLimitEnded: 'La demo ha finalizado automaticamente tras el limite de 2 minutos.'
   },
   de: {
-    start: 'Demo-Anruf starten', connectingButton: 'Verbindung wird hergestellt…', end: 'Anruf beenden',
-    connectingStatus: 'Verbindung zur KI-Rezeption wird hergestellt…', connected: 'Anruf verbunden — Jetzt sprechen',
-    ready: 'KI-Rezeption ist bereit', unavailable: 'Sprachdemo nicht verfügbar',
-    callError: 'Der Demo-Anruf konnte nicht verbunden werden. Bitte Mikrofonfreigabe prüfen und erneut versuchen.',
-    engineError: 'Die Sprachfunktion konnte nicht initialisiert werden.', loadError: 'Die Sprachfunktion konnte nicht geladen werden. Bitte Verbindung oder Inhaltsblocker prüfen.',
+    start: 'Demo-Anruf starten', connectingButton: 'Verbindung wird hergestellt...', end: 'Anruf beenden',
+    connectingStatus: 'Verbindung zur KI-Rezeption wird hergestellt...', connected: 'Anruf verbunden - Jetzt sprechen',
+    ready: 'KI-Rezeption ist bereit', unavailable: 'Sprachdemo nicht verfugbar',
+    callError: 'Der Demo-Anruf konnte nicht verbunden werden. Bitte Mikrofonfreigabe prufen und erneut versuchen.',
+    engineError: 'Die Sprachfunktion konnte nicht initialisiert werden.', loadError: 'Die Sprachfunktion konnte nicht geladen werden. Bitte Verbindung oder Inhaltsblocker prufen.',
     notReady: 'Die Sprachfunktion ist noch nicht bereit.', startError: 'Der Anruf konnte nicht gestartet werden. Bitte Mikrofonzugriff erlauben und erneut versuchen.',
     timeLimitEnded: 'Die Demo wurde nach dem 2-Minuten-Limit automatisch beendet.'
   }
@@ -81,6 +82,8 @@ function getIndustryContext() {
 }
 
 function injectIndustryContext() {
+  if (HAS_CONFIGURED_ASSISTANT) return;
+
   const message = { role: 'system', content: getIndustryContext() };
   try {
     if (typeof vapiInstance.addMessage === 'function') vapiInstance.addMessage(message);
@@ -118,7 +121,7 @@ function startCallLimitTimer() {
 function getAssistantOverrides() {
   const overrides = {};
 
-  if (demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
+  if (!HAS_CONFIGURED_ASSISTANT && demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
   if (ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
 
   return Object.keys(overrides).length ? overrides : undefined;
