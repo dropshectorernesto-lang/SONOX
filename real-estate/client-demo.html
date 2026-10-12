@@ -14,10 +14,7 @@
       background: #08111f;
       color: #f8fafc;
     }
-    main {
-      width: min(760px, calc(100% - 32px));
-      text-align: center;
-    }
+    main { width: min(760px, calc(100% - 32px)); text-align: center; }
     .badge {
       display: inline-flex;
       padding: 8px 12px;
@@ -30,33 +27,9 @@
       text-transform: uppercase;
       margin-bottom: 20px;
     }
-    h1 {
-      margin: 0;
-      font-size: clamp(42px, 7vw, 74px);
-      line-height: 1;
-    }
-    p {
-      max-width: 640px;
-      margin: 22px auto 34px;
-      color: #a8b4c7;
-      font-size: 18px;
-      line-height: 1.6;
-    }
-    button {
-      min-width: 240px;
-      border: 0;
-      border-radius: 14px;
-      padding: 17px 28px;
-      color: white;
-      font-size: 17px;
-      font-weight: 800;
-      background: linear-gradient(180deg, #5b92ff, #316ff4);
-      cursor: pointer;
-      box-shadow: 0 20px 44px rgba(49,111,244,.25);
-    }
-    button:disabled { opacity: .6; cursor: wait; }
-    button.active { background: linear-gradient(180deg, #f16d77, #d6414d); }
-    #status { min-height: 22px; margin-top: 18px; color: #f5c35a; font-size: 14px; }
+    h1 { margin: 0; font-size: clamp(42px, 7vw, 74px); line-height: 1; }
+    p { max-width: 640px; margin: 22px auto 34px; color: #a8b4c7; font-size: 18px; line-height: 1.6; }
+    .hint { color: #f5c35a; font-size: 14px; margin-top: 26px; }
   </style>
 </head>
 <body>
@@ -64,107 +37,49 @@
     <div class="badge">Sonox Real Estate Demo</div>
     <h1>Never Miss a Property Inquiry</h1>
     <p>AI receptionist demo for buyer enquiries, viewing requests, seller valuations, lettings, and lead capture.</p>
-    <button id="call-btn" disabled>Loading voice engine...</button>
-    <div id="status"></div>
+    <div class="hint">Use the phone button in the bottom-right corner to start the demo call.</div>
   </main>
 
   <script>
-    const PUBLIC_KEY = 'c6c682a7-d151-470a-bee5-6818d2f13176';
-    const ASSISTANT_ID = '26f9db02-f0c8-49ee-bf5f-a25c63f9d721';
-    const FIRST_MESSAGE = 'Thanks for calling. I can help with property enquiries, viewing requests, valuations, lettings, and passing your details to the right member of the team. How can I help today?';
-    const SYSTEM_SCRIPT = [
-      'You are a real estate AI receptionist for a Sonox demo call.',
-      'Do not start with a generic hello. Open as a real estate receptionist and immediately offer help with property enquiries, viewing requests, valuations, lettings, and routing the caller to the right team member.',
-      'Follow this script: ask whether the caller is buying, selling, renting, letting, booking a viewing, requesting a valuation, or asking a general question.',
-      'Collect caller name, phone number or email, preferred area, property type, budget or valuation address where relevant, timeline, and preferred callback time.',
-      'If the caller wants a viewing or valuation, say you can take the details and pass them to the team to confirm availability.',
-      'Never claim that a real viewing, valuation, offer, booking, callback, or appointment is confirmed unless an actual connected tool confirms it.',
-      'Keep responses concise, professional, warm, and focused on capturing the lead.'
-    ].join(' ');
-
-    const assistantOverrides = {
-      firstMessage: FIRST_MESSAGE,
-      firstMessageMode: 'assistant-speaks-first',
-      model: {
-        messages: [{ role: 'system', content: SYSTEM_SCRIPT }]
+    const assistant = '26f9db02-f0c8-49ee-bf5f-a25c63f9d721';
+    const apiKey = 'c6c682a7-d151-470a-bee5-6818d2f13176';
+    const buttonConfig = {
+      position: 'bottom-right',
+      offset: '28px',
+      width: '64px',
+      height: '64px',
+      idle: {
+        color: 'rgb(49, 111, 244)',
+        type: 'round',
+        icon: 'https://unpkg.com/lucide-static@0.321.0/icons/phone.svg'
+      },
+      loading: {
+        color: 'rgb(245, 185, 66)',
+        type: 'round',
+        icon: 'https://unpkg.com/lucide-static@0.321.0/icons/loader-2.svg'
+      },
+      active: {
+        color: 'rgb(239, 95, 108)',
+        type: 'round',
+        icon: 'https://unpkg.com/lucide-static@0.321.0/icons/phone-off.svg'
       }
     };
 
-    let vapiInstance = null;
-    let activeCall = false;
-    const btn = document.getElementById('call-btn');
-    const status = document.getElementById('status');
-
-    function setReady() {
-      btn.disabled = false;
-      btn.textContent = 'Start Demo Call';
-      status.textContent = '';
-    }
-
-    function setActive() {
-      activeCall = true;
-      btn.className = 'active';
-      btn.textContent = 'End Call';
-      status.textContent = 'Call connected. Speak now.';
-    }
-
-    function setInactive() {
-      activeCall = false;
-      btn.className = '';
-      btn.textContent = 'Start Demo Call';
-      status.textContent = '';
-    }
-
-    function loadVapi() {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        try {
-          vapiInstance = window.vapiSDK.run({
-            apiKey: PUBLIC_KEY,
-            assistant: ASSISTANT_ID,
-            assistantOverrides,
-            config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
-          });
-          vapiInstance.on('call-start', setActive);
-          vapiInstance.on('call-end', setInactive);
-          vapiInstance.on('error', (error) => {
-            console.error(error);
-            setInactive();
-            status.textContent = 'Call failed. Check microphone permission.';
-          });
-          setReady();
-        } catch (error) {
-          console.error(error);
-          status.textContent = 'Voice engine failed to initialize.';
-        }
+    (function (d, t) {
+      const g = document.createElement(t);
+      const s = d.getElementsByTagName(t)[0];
+      g.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+      g.defer = true;
+      g.async = true;
+      s.parentNode.insertBefore(g, s);
+      g.onload = function () {
+        window.vapiInstance = window.vapiSDK.run({
+          apiKey: apiKey,
+          assistant: assistant,
+          config: buttonConfig
+        });
       };
-      script.onerror = () => {
-        status.textContent = 'Voice engine failed to load.';
-      };
-      document.head.appendChild(script);
-    }
-
-    btn.addEventListener('click', async () => {
-      if (!vapiInstance) return;
-      btn.disabled = true;
-      try {
-        if (activeCall) {
-          await vapiInstance.stop();
-        } else {
-          await vapiInstance.start(ASSISTANT_ID, assistantOverrides);
-        }
-      } catch (error) {
-        console.error(error);
-        status.textContent = 'Call could not start. Check microphone permission.';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-
-    loadVapi();
+    })(document, 'script');
   </script>
 </body>
 </html>
