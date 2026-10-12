@@ -119,12 +119,10 @@ function startCallLimitTimer() {
 }
 
 function getAssistantOverrides() {
-  if (HAS_CONFIGURED_ASSISTANT) return undefined;
-
   const overrides = {};
 
   if (demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
-  if (ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
+  if (!HAS_CONFIGURED_ASSISTANT && ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
 
   return Object.keys(overrides).length ? overrides : undefined;
 }
@@ -132,15 +130,11 @@ function getAssistantOverrides() {
 function getRunOptions() {
   const options = {
     apiKey: PUBLIC_KEY,
+    assistant: ACTIVE_ASSISTANT_ID,
     config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
   };
-
-  if (!HAS_CONFIGURED_ASSISTANT) {
-    options.assistant = ACTIVE_ASSISTANT_ID;
-    const assistantOverrides = getAssistantOverrides();
-    if (assistantOverrides) options.assistantOverrides = assistantOverrides;
-  }
-
+  const assistantOverrides = getAssistantOverrides();
+  if (assistantOverrides) options.assistantOverrides = assistantOverrides;
   return options;
 }
 
