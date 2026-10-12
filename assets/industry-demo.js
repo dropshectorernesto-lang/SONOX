@@ -121,7 +121,10 @@ function startCallLimitTimer() {
 function getAssistantOverrides() {
   const overrides = {};
 
-  if (demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
+  if (demoConfig.firstMessage) {
+    overrides.firstMessage = demoConfig.firstMessage;
+    overrides.firstMessageMode = 'assistant-speaks-first';
+  }
   if (!HAS_CONFIGURED_ASSISTANT && ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
 
   return Object.keys(overrides).length ? overrides : undefined;
