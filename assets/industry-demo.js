@@ -132,11 +132,15 @@ function getAssistantOverrides() {
 function getRunOptions() {
   const options = {
     apiKey: PUBLIC_KEY,
-    assistant: ACTIVE_ASSISTANT_ID,
     config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
   };
-  const assistantOverrides = getAssistantOverrides();
-  if (assistantOverrides) options.assistantOverrides = assistantOverrides;
+
+  if (!HAS_CONFIGURED_ASSISTANT) {
+    options.assistant = ACTIVE_ASSISTANT_ID;
+    const assistantOverrides = getAssistantOverrides();
+    if (assistantOverrides) options.assistantOverrides = assistantOverrides;
+  }
+
   return options;
 }
 
