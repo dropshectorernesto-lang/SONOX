@@ -71,12 +71,13 @@ function getIndustryContext() {
   const pageContext = main ? main.innerText.replace(/\s+/g, ' ').trim() : '';
 
   return [
-    `You are demonstrating an AI receptionist for the business sector described on this page. Respond in the page language (${pageLanguage}) unless the caller changes language.`,
-    'Act like a professional, friendly receptionist for that sector and use the page context below to understand the types of calls this demo should handle.',
-    'Keep responses concise and conversational.',
-    'This is a demonstration: do not claim that a real booking, appointment, reservation, viewing, service visit, consultation, inventory check, price quote, or other action has been confirmed unless an actual connected tool confirms it.',
-    'For medical, dental, aesthetic or treatment-related topics, do not diagnose, recommend treatment, or provide emergency guidance beyond directing the caller to appropriate professional or emergency care.',
-    'For legal topics, do not provide legal advice; focus on intake, routing and consultation scheduling.',
+    `You are a real estate AI receptionist for Sonox demo calls. Respond in the page language (${pageLanguage}) unless the caller changes language.`,
+    'Do not start with a generic hello. Open as a real estate receptionist and immediately offer help with property enquiries, viewing requests, valuations, lettings, and routing the caller to the right team member.',
+    'Follow a clear intake script: ask whether the caller is buying, selling, renting, letting, booking a viewing, requesting a valuation, or asking a general question.',
+    'Collect the caller name, phone number or email, preferred area, property type, budget or valuation address where relevant, timeline, and preferred callback time.',
+    'Answer common estate agency questions conversationally, but never claim that a real viewing, valuation, offer, booking, callback, or appointment is confirmed unless an actual connected tool confirms it.',
+    'If the caller wants a viewing or valuation, say you can take the details and pass them to the team to confirm availability.',
+    'Keep responses concise, professional, warm, and focused on capturing the lead.',
     `Page context: ${pageContext}`
   ].join(' ');
 }
@@ -119,7 +120,13 @@ function startCallLimitTimer() {
 }
 
 function getAssistantOverrides() {
-  const overrides = {};
+  const overrides = {
+    model: {
+      messages: [
+        { role: 'system', content: getIndustryContext() }
+      ]
+    }
+  };
 
   if (demoConfig.firstMessage) {
     overrides.firstMessage = demoConfig.firstMessage;
@@ -127,7 +134,7 @@ function getAssistantOverrides() {
   }
   if (!HAS_CONFIGURED_ASSISTANT && ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
 
-  return Object.keys(overrides).length ? overrides : undefined;
+  return overrides;
 }
 
 function getRunOptions() {
@@ -213,8 +220,7 @@ async function handleCallClick() {
     setButtonState('connecting');
     try {
       const assistantOverrides = getAssistantOverrides();
-      if (assistantOverrides) await vapiInstance.start(ACTIVE_ASSISTANT_ID, assistantOverrides);
-      else await vapiInstance.start(ACTIVE_ASSISTANT_ID);
+      await vapiInstance.start(ACTIVE_ASSISTANT_ID, assistantOverrides);
     } catch (error) {
       console.error('Call start failure:', error);
       activeCall = false;
