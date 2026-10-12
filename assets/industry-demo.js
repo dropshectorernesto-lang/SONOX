@@ -119,12 +119,25 @@ function startCallLimitTimer() {
 }
 
 function getAssistantOverrides() {
+  if (HAS_CONFIGURED_ASSISTANT) return undefined;
+
   const overrides = {};
 
-  if (!HAS_CONFIGURED_ASSISTANT && demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
+  if (demoConfig.firstMessage) overrides.firstMessage = demoConfig.firstMessage;
   if (ACTIVE_MAX_DURATION_SECONDS > 0) overrides.maxDurationSeconds = ACTIVE_MAX_DURATION_SECONDS;
 
   return Object.keys(overrides).length ? overrides : undefined;
+}
+
+function getRunOptions() {
+  const options = {
+    apiKey: PUBLIC_KEY,
+    assistant: ACTIVE_ASSISTANT_ID,
+    config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
+  };
+  const assistantOverrides = getAssistantOverrides();
+  if (assistantOverrides) options.assistantOverrides = assistantOverrides;
+  return options;
 }
 
 function attachVapiEvents() {
@@ -166,12 +179,7 @@ function initVapi() {
     try {
       if (!window.vapiSDK || typeof window.vapiSDK.run !== 'function') throw new Error('Vapi browser SDK did not expose window.vapiSDK.run');
 
-      vapiInstance = window.vapiSDK.run({
-        apiKey: PUBLIC_KEY,
-        assistant: ACTIVE_ASSISTANT_ID,
-        assistantOverrides: getAssistantOverrides(),
-        config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
-      });
+      vapiInstance = window.vapiSDK.run(getRunOptions());
 
       if (!vapiInstance) throw new Error('Vapi failed to initialize');
 
@@ -203,7 +211,9 @@ async function handleCallClick() {
   if (!activeCall) {
     setButtonState('connecting');
     try {
-      await vapiInstance.start(ACTIVE_ASSISTANT_ID, getAssistantOverrides());
+      const assistantOverrides = getAssistantOverrides();
+      if (assistantOverrides) await vapiInstance.start(ACTIVE_ASSISTANT_ID, assistantOverrides);
+      else await vapiInstance.start(ACTIVE_ASSISTANT_ID);
     } catch (error) {
       console.error('Call start failure:', error);
       activeCall = false;
