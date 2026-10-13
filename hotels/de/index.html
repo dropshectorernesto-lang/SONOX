@@ -4,10 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sonox — KI-Hotelrezeption Demo</title>
-  <link rel="stylesheet" href="../../assets/industry-demo.css">
-  <script src="../../assets/assistant-config.js"></script>
-  <script>window.VOICES_DEMO_CONFIG={"industryKey":"hotels","readyText":"KI-Hotelrezeption ist bereit","firstMessage":"Vielen Dank für Ihren Anruf im Hotel. Wie kann ich Ihnen heute bei einem Zimmer, einer Reservierung oder Ihrem Aufenthalt helfen?"};</script>
-  <script src="../../assets/industry-demo.js" defer></script>
+  <link rel="stylesheet" href="../../assets/industry-demo.css?v=hotel-direct-button">
 </head>
 <body>
 <nav>
@@ -18,24 +15,128 @@
   </div>
 </nav>
 <main>
-  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Sprachfunktion wird geladen…</span></div>
-  <div class="eyebrow">KI-Rezeption für Hotels</div>
-  <h1>Ein herzlicher Empfang, noch bevor Ihre Gäste anreisen</h1>
-  <p class="subtext">Beantworten Sie rund um die Uhr Fragen zu Zimmerverfügbarkeit, Check-in, Hotelausstattung und Reservierungsänderungen, während sich Ihr Empfangsteam auf die Gäste vor Ort konzentriert.</p>
+  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Sprachfunktion wird geladen...</span></div>
+  <div class="eyebrow">KI-Rezeption fuer Hotels</div>
+  <h1>Ein herzlicher Empfang, noch bevor Ihre Gaeste anreisen</h1>
+  <p class="subtext">Beantworten Sie rund um die Uhr Fragen zu Zimmerverfuegbarkeit, Check-in, Hotelausstattung und Reservierungsaenderungen, waehrend sich Ihr Empfangsteam auf die Gaeste vor Ort konzentriert.</p>
   <div class="call-container">
-    <button id="call-btn" onclick="handleCallClick()" disabled>Demo-Anruf starten</button>
+    <button id="call-btn" disabled>Wird geladen...</button>
     <div id="status-msg"></div>
   </div>
   <div class="card">
-    <h3>Das können Sie im Anruf testen</h3>
+    <h3>Das koennen Sie im Anruf testen</h3>
     <ul>
-    <li><span class="bullet">&gt;</span><span>„Haben Sie nächsten Freitag ein Doppelzimmer für zwei Personen frei?“</span></li>
-    <li><span class="bullet">&gt;</span><span>„Bieten Sie einen frühen Check-in, Frühstück oder einen Flughafentransfer an?“</span></li>
-    <li><span class="bullet">&gt;</span><span>„Ich möchte eine bestehende Reservierung ändern. Wie gehe ich vor?“</span></li>
+    <li><span class="bullet">&gt;</span><span>„Haben Sie naechsten Freitag ein Doppelzimmer fuer zwei Personen frei?“</span></li>
+    <li><span class="bullet">&gt;</span><span>„Bieten Sie einen fruehen Check-in, Fruehstueck oder einen Flughafentransfer an?“</span></li>
+    <li><span class="bullet">&gt;</span><span>„Ich moechte eine bestehende Reservierung aendern. Wie gehe ich vor?“</span></li>
     </ul>
   </div>
-  <p class="note">Diese Demo zeigt mögliche Gästebetreuung. Zimmerverfügbarkeit und Buchungsänderungen müssen über ein angebundenes Hotelsystem bestätigt werden.</p>
+  <p class="note">Diese Demo zeigt moegliche Gaestebetreuung. Zimmerverfuegbarkeit und Buchungsaenderungen muessen ueber ein angebundenes Hotelsystem bestaetigt werden.</p>
 </main>
 <footer>Bereitgestellt von <strong>Sonox</strong> Automation Platform</footer>
+<script>
+  const ASSISTANT_ID = '2cb26f11-e171-4121-8141-2fbd698d1f15';
+  const PUBLIC_KEY = 'c6c682a7-d151-470a-bee5-6818d2f13176';
+  let vapiInstance = null;
+  let activeCall = false;
+
+  const callBtn = document.getElementById('call-btn');
+  const statusText = document.getElementById('status-text');
+  const statusDot = document.getElementById('status-dot');
+  const statusMsg = document.getElementById('status-msg');
+
+  function setReady() {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Demo-Anruf starten';
+    callBtn.className = '';
+    statusText.textContent = 'KI-Hotelrezeption ist bereit';
+    statusDot.style.backgroundColor = '#45d69c';
+    statusMsg.textContent = '';
+  }
+
+  function setConnecting() {
+    callBtn.disabled = true;
+    callBtn.textContent = 'Verbindung wird hergestellt...';
+    callBtn.className = 'connecting';
+    statusText.textContent = 'Verbindung zur KI-Rezeption wird hergestellt...';
+    statusDot.style.backgroundColor = '#f5b942';
+  }
+
+  function setConnected() {
+    activeCall = true;
+    callBtn.disabled = false;
+    callBtn.textContent = 'Anruf beenden';
+    callBtn.className = 'connected';
+    statusText.textContent = 'Anruf verbunden - Jetzt sprechen';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = '';
+  }
+
+  function setDisconnected() {
+    activeCall = false;
+    setReady();
+  }
+
+  function showError(message) {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Demo-Anruf starten';
+    callBtn.className = '';
+    statusText.textContent = 'Sprachdemo nicht verfuegbar';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = message;
+  }
+
+  function loadVapi() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      try {
+        vapiInstance = window.vapiSDK.run({
+          apiKey: PUBLIC_KEY,
+          assistant: ASSISTANT_ID,
+          config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
+        });
+        vapiInstance.on('call-start', setConnected);
+        vapiInstance.on('call-end', setDisconnected);
+        vapiInstance.on('error', (error) => {
+          console.error('Vapi Error:', error);
+          activeCall = false;
+          showError('Der Demo-Anruf konnte nicht verbunden werden. Bitte Mikrofonfreigabe erlauben und erneut versuchen.');
+        });
+        setReady();
+      } catch (error) {
+        console.error('Vapi init failure:', error);
+        showError('Die Sprachfunktion konnte nicht initialisiert werden.');
+      }
+    };
+    script.onerror = () => showError('Die Sprachfunktion konnte nicht geladen werden.');
+    document.head.appendChild(script);
+  }
+
+  callBtn.addEventListener('click', async () => {
+    if (!vapiInstance) {
+      showError('Die Sprachfunktion ist noch nicht bereit.');
+      return;
+    }
+
+    try {
+      if (activeCall) {
+        await vapiInstance.stop();
+        setDisconnected();
+      } else {
+        setConnecting();
+        await vapiInstance.start(ASSISTANT_ID);
+      }
+    } catch (error) {
+      console.error('Call control failure:', error);
+      activeCall = false;
+      showError('Der Anruf konnte nicht gestartet werden. Bitte Mikrofonzugriff erlauben und erneut versuchen.');
+    }
+  });
+
+  loadVapi();
+</script>
 </body>
 </html>
