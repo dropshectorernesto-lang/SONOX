@@ -4,10 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sonox — Demo de recepcionista IA para hoteles</title>
-  <link rel="stylesheet" href="../../assets/industry-demo.css">
-  <script src="../../assets/assistant-config.js"></script>
-  <script>window.VOICES_DEMO_CONFIG={"industryKey":"hotels","readyText":"Recepcionista IA del hotel lista","firstMessage":"Gracias por llamar al hotel. ¿En qué puedo ayudarte hoy con una habitación, una reserva o tu estancia?"};</script>
-  <script src="../../assets/industry-demo.js" defer></script>
+  <link rel="stylesheet" href="../../assets/industry-demo.css?v=hotel-direct-button">
 </head>
 <body>
 <nav>
@@ -18,24 +15,128 @@
   </div>
 </nav>
 <main>
-  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Cargando motor de voz…</span></div>
+  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Cargando motor de voz...</span></div>
   <div class="eyebrow">Recepcionista IA para hoteles</div>
-  <h1>Una bienvenida impecable, antes de que lleguen los huéspedes</h1>
-  <p class="subtext">Atiende consultas sobre disponibilidad de habitaciones, check-in, servicios y cambios de reserva las 24 horas, sin saturar al equipo de recepción.</p>
+  <h1>Una bienvenida impecable, antes de que lleguen los huespedes</h1>
+  <p class="subtext">Atiende consultas sobre disponibilidad de habitaciones, check-in, servicios y cambios de reserva las 24 horas, sin saturar al equipo de recepcion.</p>
   <div class="call-container">
-    <button id="call-btn" onclick="handleCallClick()" disabled>Iniciar llamada de prueba</button>
+    <button id="call-btn" disabled>Cargando...</button>
     <div id="status-msg"></div>
   </div>
   <div class="card">
     <h3>Prueba estas preguntas</h3>
     <ul>
-    <li><span class="bullet">&gt;</span><span>“¿Tenéis una habitación doble disponible para dos personas el próximo viernes?”</span></li>
-    <li><span class="bullet">&gt;</span><span>“¿Ofrecéis check-in anticipado, desayuno o traslado al aeropuerto?”</span></li>
-    <li><span class="bullet">&gt;</span><span>“Necesito modificar una reserva que ya tengo. ¿Cómo puedo hacerlo?”</span></li>
+    <li><span class="bullet">&gt;</span><span>“¿Teneis una habitacion doble disponible para dos personas el proximo viernes?”</span></li>
+    <li><span class="bullet">&gt;</span><span>“¿Ofreceis check-in anticipado, desayuno o traslado al aeropuerto?”</span></li>
+    <li><span class="bullet">&gt;</span><span>“Necesito modificar una reserva que ya tengo. ¿Como puedo hacerlo?”</span></li>
     </ul>
   </div>
-  <p class="note">Esta demo muestra la atención a huéspedes. La disponibilidad y los cambios de reserva deben confirmarse mediante un sistema hotelero conectado.</p>
+  <p class="note">Esta demo muestra la atencion a huespedes. La disponibilidad y los cambios de reserva deben confirmarse mediante un sistema hotelero conectado.</p>
 </main>
 <footer>Impulsado por <strong>Sonox</strong> Automation Platform</footer>
+<script>
+  const ASSISTANT_ID = '2cb26f11-e171-4121-8141-2fbd698d1f15';
+  const PUBLIC_KEY = 'c6c682a7-d151-470a-bee5-6818d2f13176';
+  let vapiInstance = null;
+  let activeCall = false;
+
+  const callBtn = document.getElementById('call-btn');
+  const statusText = document.getElementById('status-text');
+  const statusDot = document.getElementById('status-dot');
+  const statusMsg = document.getElementById('status-msg');
+
+  function setReady() {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Iniciar llamada de prueba';
+    callBtn.className = '';
+    statusText.textContent = 'Recepcionista IA del hotel lista';
+    statusDot.style.backgroundColor = '#45d69c';
+    statusMsg.textContent = '';
+  }
+
+  function setConnecting() {
+    callBtn.disabled = true;
+    callBtn.textContent = 'Conectando...';
+    callBtn.className = 'connecting';
+    statusText.textContent = 'Conectando con la recepcionista IA...';
+    statusDot.style.backgroundColor = '#f5b942';
+  }
+
+  function setConnected() {
+    activeCall = true;
+    callBtn.disabled = false;
+    callBtn.textContent = 'Finalizar llamada';
+    callBtn.className = 'connected';
+    statusText.textContent = 'Llamada conectada - Habla ahora';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = '';
+  }
+
+  function setDisconnected() {
+    activeCall = false;
+    setReady();
+  }
+
+  function showError(message) {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Iniciar llamada de prueba';
+    callBtn.className = '';
+    statusText.textContent = 'Demo de voz no disponible';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = message;
+  }
+
+  function loadVapi() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      try {
+        vapiInstance = window.vapiSDK.run({
+          apiKey: PUBLIC_KEY,
+          assistant: ASSISTANT_ID,
+          config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
+        });
+        vapiInstance.on('call-start', setConnected);
+        vapiInstance.on('call-end', setDisconnected);
+        vapiInstance.on('error', (error) => {
+          console.error('Vapi Error:', error);
+          activeCall = false;
+          showError('No se ha podido conectar la llamada. Permite el acceso al microfono e intentalo de nuevo.');
+        });
+        setReady();
+      } catch (error) {
+        console.error('Vapi init failure:', error);
+        showError('No se ha podido iniciar el motor de voz.');
+      }
+    };
+    script.onerror = () => showError('No se ha podido cargar el motor de voz.');
+    document.head.appendChild(script);
+  }
+
+  callBtn.addEventListener('click', async () => {
+    if (!vapiInstance) {
+      showError('El motor de voz todavia no esta listo.');
+      return;
+    }
+
+    try {
+      if (activeCall) {
+        await vapiInstance.stop();
+        setDisconnected();
+      } else {
+        setConnecting();
+        await vapiInstance.start(ASSISTANT_ID);
+      }
+    } catch (error) {
+      console.error('Call control failure:', error);
+      activeCall = false;
+      showError('No se ha podido iniciar la llamada. Permite el acceso al microfono e intentalo de nuevo.');
+    }
+  });
+
+  loadVapi();
+</script>
 </body>
 </html>
