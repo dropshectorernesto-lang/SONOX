@@ -4,10 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sonox — Hotel AI Receptionist Demo</title>
-  <link rel="stylesheet" href="../assets/industry-demo.css">
-  <script src="../assets/assistant-config.js"></script>
-  <script>window.VOICES_DEMO_CONFIG={"industryKey":"hotels","readyText":"Hotel AI Receptionist Ready","firstMessage":"Thank you for calling the hotel. How may I help you with a room, reservation or your stay today?"};</script>
-  <script src="../assets/industry-demo.js" defer></script>
+  <link rel="stylesheet" href="../assets/industry-demo.css?v=hotel-direct-button">
 </head>
 <body>
 <nav>
@@ -18,12 +15,12 @@
   </div>
 </nav>
 <main>
-  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine…</span></div>
+  <div class="status-pill"><span id="status-dot" class="dot"></span><span id="status-text">Loading voice engine...</span></div>
   <div class="eyebrow">AI Receptionist for Hotels</div>
   <h1>A Warm Welcome, Even Before Guests Arrive</h1>
   <p class="subtext">Help guests with room availability, check-in questions, amenities and reservation changes — around the clock, without keeping your front desk on the phone.</p>
   <div class="call-container">
-    <button id="call-btn" onclick="handleCallClick()" disabled>Start Demo Call</button>
+    <button id="call-btn" disabled>Loading...</button>
     <div id="status-msg"></div>
   </div>
   <div class="card">
@@ -37,5 +34,109 @@
   <p class="note">This demo illustrates guest support. Room availability and booking changes must be confirmed through a connected hotel system.</p>
 </main>
 <footer>Powered by <strong>Sonox</strong> Automation Platform</footer>
+<script>
+  const ASSISTANT_ID = '2cb26f11-e171-4121-8141-2fbd698d1f15';
+  const PUBLIC_KEY = 'c6c682a7-d151-470a-bee5-6818d2f13176';
+  let vapiInstance = null;
+  let activeCall = false;
+
+  const callBtn = document.getElementById('call-btn');
+  const statusText = document.getElementById('status-text');
+  const statusDot = document.getElementById('status-dot');
+  const statusMsg = document.getElementById('status-msg');
+
+  function setReady() {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Start Demo Call';
+    callBtn.className = '';
+    statusText.textContent = 'Hotel AI Receptionist Ready';
+    statusDot.style.backgroundColor = '#45d69c';
+    statusMsg.textContent = '';
+  }
+
+  function setConnecting() {
+    callBtn.disabled = true;
+    callBtn.textContent = 'Connecting...';
+    callBtn.className = 'connecting';
+    statusText.textContent = 'Connecting to AI Receptionist...';
+    statusDot.style.backgroundColor = '#f5b942';
+  }
+
+  function setConnected() {
+    activeCall = true;
+    callBtn.disabled = false;
+    callBtn.textContent = 'End Call';
+    callBtn.className = 'connected';
+    statusText.textContent = 'Call Connected - Speak Now';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = '';
+  }
+
+  function setDisconnected() {
+    activeCall = false;
+    setReady();
+  }
+
+  function showError(message) {
+    callBtn.disabled = false;
+    callBtn.textContent = 'Start Demo Call';
+    callBtn.className = '';
+    statusText.textContent = 'Voice demo unavailable';
+    statusDot.style.backgroundColor = '#ef5f6c';
+    statusMsg.textContent = message;
+  }
+
+  function loadVapi() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      try {
+        vapiInstance = window.vapiSDK.run({
+          apiKey: PUBLIC_KEY,
+          assistant: ASSISTANT_ID,
+          config: { position: 'bottom-right', offset: '0px', width: '1px', height: '1px' }
+        });
+        vapiInstance.on('call-start', setConnected);
+        vapiInstance.on('call-end', setDisconnected);
+        vapiInstance.on('error', (error) => {
+          console.error('Vapi Error:', error);
+          activeCall = false;
+          showError('Call failed. Please allow microphone permission and try again.');
+        });
+        setReady();
+      } catch (error) {
+        console.error('Vapi init failure:', error);
+        showError('Voice engine could not initialize.');
+      }
+    };
+    script.onerror = () => showError('Voice engine failed to load.');
+    document.head.appendChild(script);
+  }
+
+  callBtn.addEventListener('click', async () => {
+    if (!vapiInstance) {
+      showError('Voice engine is not ready yet.');
+      return;
+    }
+
+    try {
+      if (activeCall) {
+        await vapiInstance.stop();
+        setDisconnected();
+      } else {
+        setConnecting();
+        await vapiInstance.start(ASSISTANT_ID);
+      }
+    } catch (error) {
+      console.error('Call control failure:', error);
+      activeCall = false;
+      showError('Call could not start. Please allow microphone permission and try again.');
+    }
+  });
+
+  loadVapi();
+</script>
 </body>
 </html>
